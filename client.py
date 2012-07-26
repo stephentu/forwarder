@@ -22,8 +22,12 @@ if __name__ == '__main__':
   outside_sock.connect((outside_host, outside_port))
 
   # make TCP connection to localhost:inside_port
-  inside_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  inside_sock.connect(("localhost", inside_port))
+  inside_sock = None
+
+  def mk_inside_socket(inside_port):
+    x = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    x.connect(("localhost", inside_port))
+    return x
 
   BufSize = 4096
 
@@ -32,24 +36,23 @@ if __name__ == '__main__':
   inside_sock.setblocking(False)
 
   while True:
-    rlist, _, _ = select.select([outside_sock, inside_sock], [], [])
+    socks = [outside_sock, inside_sock] if inside_sock else [outside_sock]
+    rlist, _, _ = select.select(socks, [], [])
 
     for x in rlist:
       if x is outside_sock:
         # read all you can currently from outside_sock
-        try:
-          buf = outside_sock.recv(BufSize)
-          # write it all to inside_sock
-          _write_all(inside_sock, buf)
-        except socket.error, e:
-          print >>sys.stderr, "ERROR: recv(outside_sock):", e
-      elif x is inside_sock:
+        buf = outside_sock.recv(BufSize)
+        if not inside_sock:
+          inside_sock = mk_inside_socket(inside_port)
+          assert inside_sock
+
+        # write it all to inside_sock
+        _write_all(inside_sock, buf)
+      elif inside_sock and x is inside_sock:
         # read all you can currently from inside_sock
-        try:
-          buf = inside_sock.recv(BufSize)
-          # write it all to outside_sock
-          _write_all(outside_sock, buf)
-        except socket.error, e:
-          print >>sys.stderr, "ERROR: recv(inside_sock):", e
+        buf = inside_sock.recv(BufSize)
+        # write it all to outside_sock
+        _write_all(outside_sock, buf)
       else:
         assert False, "bad socket found"
