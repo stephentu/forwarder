@@ -24,8 +24,8 @@ class OutsideListenerHandler(SocketServer.BaseRequestHandler):
     BufSize = 4096
 
     # set sockets to be non-blocking
-    s.setblocking(False)
-    ClientSocket.setblocking(False)
+    #s.setblocking(False)
+    #ClientSocket.setblocking(False)
 
     while True:
       rlist, _, _ = select.select([s, ClientSocket], [], [])
@@ -35,18 +35,29 @@ class OutsideListenerHandler(SocketServer.BaseRequestHandler):
           # read all you can currently from s
           try:
             buf = s.recv(BufSize)
+            if not buf:
+              # s is closed
+              print >>sys.stderr, "INFO: s is closed"
+              return
+            print >>sys.stderr, "INFO: read %d bytes from s - writing to ClientSocket" % len(buf)
             # write it all to ClientSocket
             self._write_all(ClientSocket, buf)
           except socket.error, e:
             print >>sys.stderr, "ERROR: recv(s):", e
+            sys.exit(1)
         elif x is ClientSocket:
           # read all you can currently from ClientSocket
           try:
             buf = ClientSocket.recv(BufSize)
+            if not buf:
+              print >>sys.stderr, "ERROR: ClientSocket is closed - exiting"
+              sys.exit(2)
+            print >>sys.stderr, "INFO: read %d bytes from ClientSocket" % len(buf)
             # write it all to s
             self._write_all(s, buf)
           except socket.error, e:
             print >>sys.stderr, "ERROR: recv(ClientSocket):", e
+            sys.exit(1)
         else:
           assert False, "bad socket found"
 
