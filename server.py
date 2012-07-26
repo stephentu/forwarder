@@ -15,6 +15,7 @@ class OutsideListenerHandler(SocketServer.BaseRequestHandler):
     assert ret is None
 
   def handle(self):
+    print >>sys.stderr, "WARN: Got outside request"
     s = self.request
 
     global ClientSocket
@@ -52,6 +53,7 @@ class OutsideListenerHandler(SocketServer.BaseRequestHandler):
 
 class InsideListenerHandler(SocketServer.BaseRequestHandler):
   def handle(self):
+    print >>sys.stderr, "WARN: Got inside request"
     s = self.request
 
     # XXX: do something better than this
@@ -66,8 +68,8 @@ if __name__ == '__main__':
   inside_port  = int(inside_port)  # an internal port
   assert outside_port != inside_port, "app port / internal port should not be the same"
 
-  out_srvr = SocketServer.TCPServer(("localhost", outside_port), OutsideListenerHandler)
-  in_srvr  = SocketServer.TCPServer(("localhost", inside_port),  InsideListenerHandler)
+  out_srvr = SocketServer.TCPServer(("0.0.0.0", outside_port), OutsideListenerHandler)
+  in_srvr  = SocketServer.TCPServer(("0.0.0.0", inside_port),  InsideListenerHandler)
 
   out_srvr_thd = threading.Thread(target=out_srvr.serve_forever)
   out_srvr_thd.start()

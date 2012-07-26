@@ -27,13 +27,13 @@ if __name__ == '__main__':
   def mk_inside_socket(inside_port):
     x = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     x.connect(("localhost", inside_port))
+    x.setblocking(False)
     return x
 
   BufSize = 4096
 
   # set sockets to be non-blocking
   outside_sock.setblocking(False)
-  inside_sock.setblocking(False)
 
   while True:
     socks = [outside_sock, inside_sock] if inside_sock else [outside_sock]
