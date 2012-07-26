@@ -43,6 +43,10 @@ if __name__ == '__main__':
       if x is outside_sock:
         # read all you can currently from outside_sock
         buf = outside_sock.recv(BufSize)
+        if not buf:
+          print >>sys.stderr, "ERROR: outside_sock is closed - exiting"
+          sys.exit(1)
+
         if not inside_sock:
           inside_sock = mk_inside_socket(inside_port)
           assert inside_sock
@@ -52,7 +56,11 @@ if __name__ == '__main__':
       elif inside_sock and x is inside_sock:
         # read all you can currently from inside_sock
         buf = inside_sock.recv(BufSize)
-        # write it all to outside_sock
-        _write_all(outside_sock, buf)
+        if not buf:
+          print >>sys.stderr, "INFO: inside_sock closed"
+          inside_sock = None
+        else:
+          # write it all to outside_sock
+          _write_all(outside_sock, buf)
       else:
         assert False, "bad socket found"
