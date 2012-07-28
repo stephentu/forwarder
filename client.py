@@ -73,11 +73,17 @@ if __name__ == '__main__':
               if inside_sock:
                 inside_sock.close()
               inside_sock = None
+              out_sock_read_mode = MODE_CMD
+              out_sock_msg_size = 1
+              out_sock_buf = ''
             elif cmd == CMD_NEW_CONN:
               # this is a new connection, so we should create a new inside_sock
               if inside_sock:
                 inside_sock.close()
               inside_sock = mk_inside_socket(inside_port)
+              out_sock_read_mode = MODE_CMD
+              out_sock_msg_size = 1
+              out_sock_buf = ''
             else:
               assert False, "bad command: %d" % cmd
           elif out_sock_read_mode == MODE_PAYLOAD_LEN:
@@ -89,7 +95,7 @@ if __name__ == '__main__':
           elif out_sock_read_mode == MODE_PAYLOAD:
             # write the payload to inside_sock
             assert inside_sock, "payload to write w/o any open socket"
-            self._write_all(inside_sock, out_sock_buf)
+            _write_all(inside_sock, out_sock_buf)
             out_sock_read_mode = MODE_CMD
             out_sock_msg_size = 1
             out_sock_buf = ''
