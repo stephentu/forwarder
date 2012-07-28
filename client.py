@@ -61,7 +61,7 @@ if __name__ == '__main__':
           # read entire message
           if out_sock_read_mode == MODE_CMD:
             assert len(out_sock_buf) == 1
-            cmd, = struct.unpack('c', out_sock_buf)
+            cmd, = struct.unpack('!B', out_sock_buf)
             if cmd == CMD_DATA:
               # switch to reading payload length
               out_sock_read_mode = MODE_PAYLOAD_LEN
@@ -83,7 +83,7 @@ if __name__ == '__main__':
           elif out_sock_read_mode == MODE_PAYLOAD_LEN:
             assert len(out_sock_buf) == 4
             out_sock_read_mode = MODE_PAYLOAD
-            out_sock_msg_size, = struct.unpack('I', out_sock_buf)
+            out_sock_msg_size, = struct.unpack('!I', out_sock_buf)
             assert out_sock_msg_size > 0 # no empty messages
             out_sock_buf = ''
           elif out_sock_read_mode == MODE_PAYLOAD:

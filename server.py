@@ -71,7 +71,7 @@ class OutsideListenerHandler(SocketServer.BaseRequestHandler):
               # read entire message
               if client_sock_read_mode == MODE_CMD:
                 assert len(client_sock_buf) == 1
-                cmd, = struct.unpack('c', client_sock_buf)
+                cmd, = struct.unpack('!B', client_sock_buf)
                 if cmd == CMD_DATA:
                   # switch to reading payload length
                   client_sock_read_mode = MODE_PAYLOAD_LEN
@@ -87,7 +87,7 @@ class OutsideListenerHandler(SocketServer.BaseRequestHandler):
               elif client_sock_read_mode == MODE_PAYLOAD_LEN:
                 assert len(client_sock_buf) == 4
                 client_sock_read_mode = MODE_PAYLOAD
-                client_sock_msg_size, = struct.unpack('I', client_sock_buf)
+                client_sock_msg_size, = struct.unpack('!I', client_sock_buf)
                 assert client_sock_msg_size > 0 # no empty messages
                 client_sock_buf = ''
               elif client_sock_read_mode == MODE_PAYLOAD:

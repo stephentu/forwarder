@@ -22,12 +22,11 @@ MODE_PAYLOAD     = 2
 # [ CMD_CLOSE_CONN ]
 
 def create_new_conn_message():
-  return struct.pack('B', CMD_NEW_CONN)
+  return struct.pack('!B', CMD_NEW_CONN)
 
 def create_data_message(buf):
   '''create a data message, containing buf as the payload'''
-  x = struct.pack('BIs', CMD_DATA, len(buf), buf)
-  assert len(x) == (1 + 4 + len(buf))
+  return struct.pack('!BI', CMD_DATA, len(buf)) + buf
 
 def create_close_conn_message():
-  return struct.pack('B', CMD_CLOSE_CONN)
+  return struct.pack('!B', CMD_CLOSE_CONN)
